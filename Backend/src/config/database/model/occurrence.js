@@ -8,7 +8,8 @@ const Occurrence = new mongoose.Schema({
     },
     dangerLevel: {type: String, required: true },
     monsterName: {type: String, required: true },
-    date: { type: Date, required: true}
+    date: { type: Date, required: true},
+    state: { type: String, required: true, enum: ['done','pending','attending'] }
 })
 
 module.exports = resful.model('occurrence', Occurrence)

@@ -8,7 +8,9 @@ class HeroManager{
     constructor(){
         this.connectToAPI();
         this.setOccurrenceListener();
-    }
+        this.queue=[];
+        this.resendOccurrencesToHandler();
+        }
 
     connectToAPI(){
         io.on('connect', ()=>console.log('connected'));
@@ -20,6 +22,47 @@ class HeroManager{
         })
     }
 
+    async occurrenceHandler(occurrence){
+        let occurrenceRegistered;
+        if(this.queue.includes(occurrence)){
+            occurrenceRegistered = occurrence;
+        }else{
+            occurrenceRegistered = await this.registerOccurence(occurrence)
+        }
+        let hero = await this.chooseHero(occurrence.dangerLevel)
+        if(hero.length>0){
+            hero=hero[0]
+            this.removeFromQueue(occurrenceRegistered)
+            console.log('Heroi escolhido: ', hero)
+            this.registerHeroLog(occurrenceRegistered, hero,false)
+            this.markHeroOut(hero)
+            this.changeOccurrenceState(occurrenceRegistered,'attending')
+            this.startCountdowForHeroBack(occurrenceRegistered,hero)
+        }else if(!this.queue.includes(occurrence)){
+            
+            console.log('Herois indisponíveis no momento: ', hero)
+            console.log('Ocorrencia enviado na fila: ', occurrence)
+            this.queue.push(occurrenceRegistered)
+        }
+    }
+
+    removeFromQueue(occurrence){
+        if(this.queue.includes(occurrence)){
+            let index = this.queue.indexOf(occurrence)
+            this.queue.splice(index,1)
+        }
+    }
+
+    resendOccurrencesToHandler(){
+        let index = 0;
+        setInterval(() =>{
+            if(this.queue[index]){;
+                this.occurrenceHandler(this.queue[index])
+                index=>this.queue.length-1 ? index=0 : index+=1
+            }
+        }, 1000);
+    }
+
     registerOccurence(occurrence){
         return Occurrence.create({
             location: { 
@@ -28,23 +71,24 @@ class HeroManager{
             },
             dangerLevel: occurrence.dangerLevel,
             monsterName: occurrence.monsterName,
-            date: new Date(Date.now())         
+            date: new Date(Date.now()),
+            state: 'pending'         
         })
     }
 
     markHeroOut(hero){
-        Hero.updateOne({ _id: hero._id}, { avaible: false}, (err,res)=> {
-             if(err) console.error(err) 
-            })
+        hero.avaible = false;
+        hero.save()
+
     }
 
     markHeroAvaible(hero){
-        Hero.updateOne({ _id: hero._id}, { avaible: true}, (err,res)=> {
-            if(err) console.error(err) 
-           })
+        hero.avaible = true;
+        hero.save()
+
     }
 
-    markHeroLog(occurrence,hero,state){
+    registerHeroLog(occurrence,hero,state){
         HeroLog.create({
             hero: {
                 id: hero.id,
@@ -53,49 +97,42 @@ class HeroManager{
             avaible: state,
             date: new Date(Date.now()),
             occurrence: occurrence._id
-        })
+        },(err)=> {if(err) console.log('erro no registro de herolog! ', err)})
     }
 
     startCountdowForHeroBack(occurrence,hero){
         setTimeout(()=>{
-            this.markHeroLog(occurrence,hero,true)
+            this.registerHeroLog(occurrence,hero,true)
             this.markHeroAvaible(hero);
-        }, 90000)
+            this.changeOccurrenceState(occurrence,'done')
+        }, 120000)
     }
 
-    async occurrenceHandler(occurrence){
-        let hero = await this.chooseHero(occurrence.dangerLevel)
-        let occurrenceRegistered = await this.registerOccurence(occurrence,hero)
-        this.markHeroLog(occurrenceRegistered, hero,false)
-        this.markHeroOut(hero)
-        this.startCountdowForHeroBack(occurrenceRegistered,hero)
+    changeOccurrenceState(occurrence,state){
+        occurrence.state = state;
+        occurrence.save()
     }
 
     async findAvaibleHero(heroClass){
-        let heroes;
+        let heroes=[];
         await Hero.find({ avaible: true, class: heroClass }, (err,resp)=>{
            heroes = resp
-           if(err) console.err(err)
+           if(err) {console.err(err)}
         });
         return heroes;
     }
 
     async chooseHero(dangerLevel){
-        let heroes;
-        switch(dangerLevel){
-            case 'God':
-                heroes = await this.findAvaibleHero('S')
-                return heroes[0];
-            case 'Dragon':
-                heroes = await this.findAvaibleHero('A')
-                return heroes[0];
-            case 'Tiger':
-                heroes = await this.findAvaibleHero('B')
-                return heroes[0];
-            case 'Wolf':
-                heroes = await this.findAvaibleHero('C')
-                return heroes[0];
+        let heroes=[];
+        try{
+            let heroClass = { God: 'S', Dragon: 'A', Tiger: 'B', Wolf: 'C' }
+            let heroes = await this.findAvaibleHero(heroClass[dangerLevel]);
+            return heroes;
+        }catch(e){
+            console.error(e)
         }
+        return heroes;
+        
     }
 
     
