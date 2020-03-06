@@ -1,0 +1,53 @@
+.hero-form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 50px;
+}
+
+.hero-form input{
+    max-width: 300px;
+    line-height: 50px;
+}
+
+.hero-form button{
+    max-height: 40px;
+}
+
+.hero-form-title{
+    height: 80px;
+    line-height: 80px;
+    text-align: center;
+}
+.hero-inputbox{
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+}
+
+.heroes-tab-container{
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.heroes-tab{
+    margin: 10px 0 10px 0;
+}
+.heroes-tab{
+    padding: 10px;
+    color: black;
+    border: 1px solid blue;
+}
+
+.heroes-tab[data-active='true']{
+    background-color: blue;
+    color: white;
+}
+
+.heroes-tab:first-child{
+    border-radius: 20px 0 0 20px;
+}
+.heroes-tab:last-child{
+    border-radius: 0 20px 20px 0;
+}

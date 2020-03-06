@@ -115,10 +115,14 @@ class HeroManager{
 
     async findAvaibleHero(heroClass){
         let heroes=[];
-        await Hero.find({ avaible: true, class: heroClass }, (err,resp)=>{
-           heroes = resp
-           if(err) {console.err(err)}
-        });
+        try{
+            await Hero.find({ avaible: true, class: heroClass }, (err,resp)=>{
+                heroes = resp
+                if(err) {console.err(err)}
+             });
+        }catch(e){
+            console.error(e)
+        }
         return heroes;
     }
 
