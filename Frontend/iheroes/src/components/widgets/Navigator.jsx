@@ -15,13 +15,13 @@ export default (props)=>{
                         <ul className="navbar-nav">
 
                             <li className='nav-item mr-auto'>
-                                <a className="nav-link" onClick={props.showHeroes}>Heróis</a>
+                                <a className="nav-link navigator-item" onClick={props.showHeroes}>Heróis</a>
                             </li>
                             <li className='nav-item mr-auto'>
-                                <a className="nav-link" onClick={props.showOccurrences}>Ocorrências</a>
+                                <a className="nav-link navigator-item" onClick={props.showOccurrences}>Ocorrências</a>
                             </li>
                             <li className='nav-item mr-auto'>
-                                <a className="nav-link" onClick={props.logout}>Logout</a>
+                                <a className="nav-link navigator-item" onClick={props.logout}>Logout</a>
                             </li>
                         </ul>
                     </div>

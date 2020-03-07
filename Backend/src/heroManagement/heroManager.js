@@ -3,47 +3,47 @@ const io = require('socket.io-client')(URL)
 const Hero = require('../config/database/model/heroService')
 const Occurrence = require('../config/database/model/ocurrenceService')
 const HeroLog = require('../config/database/model/heroLogService')
+const {setAllHeroesAvaible, connectToAPI, setOccurrenceListener, returnRegisteredOccurrence, chooseHeroes} = require('./Utils') 
 
 class HeroManager{
     constructor(){
-        this.connectToAPI();
-        this.setOccurrenceListener();
+        this.occurrenceHandler = this.occurrenceHandler.bind(this)
         this.queue=[];
-        this.resendOccurrencesToHandler();
-        }
-
-    connectToAPI(){
-        io.on('connect', ()=>console.log('connected'));
+        this.initRotines()
     }
 
-    setOccurrenceListener(){
-        io.on('occurrence', occurrence=>{
-            this.occurrenceHandler(occurrence)
-        })
+    initRotines(){
+        // setAllHeroesAvaible()
+        connectToAPI(io)
+        setOccurrenceListener(io,this.occurrenceHandler)
+        // this.resendOccurrencesToHandler();
     }
+
+    // setOccurrenceListener(occurrenceHandler){
+    //     io.on('occurrence', occurrence=>{
+    //         occurrenceHandler(occurrence)
+    //     })
+    // }
 
     async occurrenceHandler(occurrence){
-        let occurrenceRegistered;
-        if(this.queue.includes(occurrence)){
-            occurrenceRegistered = occurrence;
-        }else{
-            occurrenceRegistered = await this.registerOccurence(occurrence)
-        }
-        let hero = await this.chooseHero(occurrence.dangerLevel)
-        if(hero.length>0){
-            hero=hero[0]
-            this.removeFromQueue(occurrenceRegistered)
-            console.log('Heroi escolhido: ', hero)
-            this.registerHeroLog(occurrenceRegistered, hero,false)
-            this.markHeroOut(hero)
-            this.changeOccurrenceState(occurrenceRegistered,'attending')
-            this.startCountdowForHeroBack(occurrenceRegistered,hero)
-        }else if(!this.queue.includes(occurrence)){
+        let occurrenceRegistered = await returnRegisteredOccurrence(occurrence,this.queue)
+        console.log('occorrencias', occurrenceRegistered)
+        let heroes = await chooseHeroes(occurrenceRegistered.dangerLevel)
+        console.log('herois selecionados', heroes)
+        // if(hero.length>0){
+        //     hero=hero[0]
+        //     this.removeFromQueue(occurrenceRegistered)
+        //     console.log('Heroi escolhido: ', hero)
+        //     this.registerHeroLog(occurrenceRegistered, hero,false)
+        //     this.markHeroOut(hero)
+        //     this.changeOccurrenceState(occurrenceRegistered,'attending')
+        //     this.startCountdowForHeroBack(occurrenceRegistered,hero)
+        // }else if(!this.queue.includes(occurrence)){
             
-            console.log('Herois indisponíveis no momento: ', hero)
-            console.log('Ocorrencia enviado na fila: ', occurrence)
-            this.queue.push(occurrenceRegistered)
-        }
+        //     console.log('Herois indisponíveis no momento: ', hero)
+        //     console.log('Ocorrencia enviado na fila: ', occurrence)
+        //     this.queue.push(occurrenceRegistered)
+        // }
     }
 
     removeFromQueue(occurrence){
@@ -63,18 +63,18 @@ class HeroManager{
         }, 1000);
     }
 
-    registerOccurence(occurrence){
-        return Occurrence.create({
-            location: { 
-                lat: occurrence.location[0].lat,
-                lng: occurrence.location[0].lng
-            },
-            dangerLevel: occurrence.dangerLevel,
-            monsterName: occurrence.monsterName,
-            date: new Date(Date.now()),
-            state: 'pending'         
-        })
-    }
+    // registerOccurence(occurrence){
+    //     return Occurrence.create({
+    //         location: { 
+    //             lat: occurrence.location[0].lat,
+    //             lng: occurrence.location[0].lng
+    //         },
+    //         dangerLevel: occurrence.dangerLevel,
+    //         monsterName: occurrence.monsterName,
+    //         date: new Date(Date.now()),
+    //         state: 'pending'         
+    //     })
+    // }
 
     markHeroOut(hero){
         hero.avaible = false;
@@ -113,31 +113,31 @@ class HeroManager{
         occurrence.save()
     }
 
-    async findAvaibleHero(heroClass){
-        let heroes=[];
-        try{
-            await Hero.find({ avaible: true, class: heroClass }, (err,resp)=>{
-                heroes = resp
-                if(err) {console.err(err)}
-             });
-        }catch(e){
-            console.error(e)
-        }
-        return heroes;
-    }
+    // async findAvaibleHero(heroClass){
+    //     let heroes=[];
+    //     try{
+    //         await Hero.find({ avaible: true, class: heroClass }, (err,resp)=>{
+    //             heroes = resp
+    //             if(err) {console.err(err)}
+    //          });
+    //     }catch(e){
+    //         console.error(e)
+    //     }
+    //     return heroes;
+    // }
 
-    async chooseHero(dangerLevel){
-        let heroes=[];
-        try{
-            let heroClass = { God: 'S', Dragon: 'A', Tiger: 'B', Wolf: 'C' }
-            let heroes = await this.findAvaibleHero(heroClass[dangerLevel]);
-            return heroes;
-        }catch(e){
-            console.error(e)
-        }
-        return heroes;
+    // async chooseHero(dangerLevel){
+    //     let heroes=[];
+    //     try{
+    //         let heroClass = { God: 'S', Dragon: 'A', Tiger: 'B', Wolf: 'C' }
+    //         let heroes = await this.findAvaibleHero(heroClass[dangerLevel]);
+    //         return heroes;
+    //     }catch(e){
+    //         console.error(e)
+    //     }
+    //     return heroes;
         
-    }
+    // }
 
     
 }
