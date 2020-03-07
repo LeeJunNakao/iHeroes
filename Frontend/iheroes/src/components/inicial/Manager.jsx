@@ -7,7 +7,7 @@ import { toastr } from 'react-redux-toastr'
 import { getData, requestHeroesData, requestOccurrencesData, requestHeroesLogData } from '../../assets/js/Utils'
 import URL from '../../config/URL'
 import request from '../../assets/js/request'
-import { authenticate, getToken } from '../../actions/auth'
+import { authenticate, getToken, getUsername } from '../../actions/auth'
 import { getHeroData,getOccurrencesData, getHeroesLogData } from '../../actions/data'
 import Login from './Login'
 import Base from './Base'
@@ -40,7 +40,6 @@ class Manager extends Component{
         }catch(err){
             console.error(err)
             if(err.response) err.response.data.errors.forEach(e=> toastr.error('Erro',e))
-
         }
 
     }
@@ -50,17 +49,26 @@ class Manager extends Component{
             let data = localStorage.getItem('iheroes')
             data = JSON.parse(data)
             this.props.getToken(data.token)
+            this.props.getUsername(data.name)
         }
     }
 
+    removeStorage(){
+        localStorage.removeItem('iheroes')
+    }
+
     async validateToken(){
+        let response = false
         try{
-            let response = await request(URL.validateToken,'post',this.props.auth.token)
+            response = await request(URL.validateToken,'post',this.props.auth.token)
             this.props.authenticate(response.valid)
-            if(!response.valid && localStorage.getItem('iheroes')) localStorage.removeItem('iheroes')
         }catch(e){
             console.error(e)
         }
+        if(!response && localStorage.getItem('iheroes')){
+            localStorage.removeItem('iheroes')
+            this.props.getToken(null)
+        } 
     }
 
 
@@ -78,6 +86,6 @@ class Manager extends Component{
 const mapStateToProps = state=>({
     auth: state.auth
 })
-const mapDispatchToProps = dispatch => bindActionCreators({ authenticate, getToken, getHeroData, getOccurrencesData, getHeroesLogData }, dispatch)
+const mapDispatchToProps = dispatch => bindActionCreators({ authenticate, getToken, getHeroData, getOccurrencesData, getHeroesLogData, getUsername }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(Manager);

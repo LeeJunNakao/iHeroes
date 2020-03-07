@@ -13,3 +13,13 @@ export function showRegisterForm(){
 export function showLoginForm(){
     return { type: 'SHOW_LOGIN_FORM' }
 }
+
+export function logout(){
+    return { type: 'LOGOUT' }
+}
+
+export function getUsername(username){
+    return { type: 'GET_USERNAME', payload: username }
+}
+
+

@@ -100,7 +100,7 @@ class HeroesTable extends Component {
                     {heroesList}
                 </tbody>
             </Table>
-            <Pagination data={this.props.data.heroes} callback={this.props.changeHeroesPage}/>
+            <Pagination data={this.props.data.heroes} callback={this.props.changeHeroesPage} page='heroesPage'/>
         </div>
         )
     }

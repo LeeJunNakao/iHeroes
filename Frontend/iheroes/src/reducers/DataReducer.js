@@ -4,7 +4,7 @@ const INITIAL_STATE = {
     heroesPage: 1,
     heroesLog: [],
     heroesLogPage: 1,
-    occurrencesPage: 1,
+    occurrencesPage: 1
 }
 
 export default (state=INITIAL_STATE, action)=>{

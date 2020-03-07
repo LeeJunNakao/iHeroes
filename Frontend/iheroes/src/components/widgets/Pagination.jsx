@@ -1,75 +1,58 @@
 import Pagination from 'react-bootstrap/Pagination'
 import React from 'react'
+import { connect } from "react-redux";
 
-function calculateNumberOfPages(data){
-   
+
+function calculateNumberOfPages(data) {
     let lenght = data.length
-
-    while(lenght%10!=0) lenght++
-
-    let pages = lenght/10
-
-    if(pages<1){
+    while (lenght % 10 != 0) lenght++
+    let pages = lenght / 10
+    if (pages < 1) {
         pages = 1
     }
-
     return pages;
 }
 
 
-export default function createPagination(props){
+function createPagination(props) {
     let pages = calculateNumberOfPages(props.data)
-    let paginationItem=[];
-
-    if(pages==1){
-        return (
-            <Pagination className="flex-div justify-content-center">
-                <Pagination.Item>{1}</Pagination.Item>
-            </Pagination>
-        )
-    }else if(pages>1 && pages<=10){
-        for(let i=1;i<=pages;i++){
-            paginationItem.push(
-            <div onClick={()=>props.callback(i)}>
-                <Pagination.Item >{i}</Pagination.Item>
-            </div>)
+    const changePage = (incremental) => {
+        if (props.database[props.page] + incremental > 0 && props.database[props.page] + incremental <= pages) {
+            return props.database[props.page] + incremental
+        } else {
+            return props.database[props.page]
         }
-        return(
-            <Pagination className="flex-div justify-content-center">
-                <Pagination.Prev />
-                    {paginationItem}
-                <Pagination.Next />
-            </Pagination>
-        )
-
-    }else if(pages>10){
-        let middle = parseInt(pages/2)
-
-        for(let i=middle-1; i<=middle+1; i++){
-            paginationItem.push(
-            <div onClick={()=>props.callback(i)}>
-                <Pagination.Item >{i}</Pagination.Item>
-            </div>)
-        }
-
-        return(
-            <Pagination className="flex-div justify-content-center">
-                <Pagination.Prev />
-                <div onClick={()=>props.callback(1)}>
-                    <Pagination.Item>{1}</Pagination.Item>
-                </div>
-                
-                <Pagination.Ellipsis />
-
-                    {paginationItem}
-
-                <Pagination.Ellipsis />
-                <div onClick={()=>props.callback(pages)}>
-                    <Pagination.Item>{pages}</Pagination.Item>
-                </div>
-                
-                <Pagination.Next />
-            </Pagination>
-        )
     }
+
+    return (
+        <Pagination className="flex-div justify-content-center">
+
+            <div onClick={() => props.callback(1)}>
+                <Pagination.First />
+            </div>
+
+            <div onClick={() => props.callback(changePage(-1))}>
+                <Pagination.Prev />
+            </div>
+
+            <div onClick={() => props.callback(props.database[props.page])}>
+                <Pagination.Item>{props.database[props.page]}/{pages}</Pagination.Item>
+            </div>
+
+            <div onClick={() => props.callback(changePage(1))}>
+                <Pagination.Next />
+            </div>
+
+            <div onClick={() => props.callback(pages)}>
+                <Pagination.Last />
+            </div>
+        </Pagination>
+    )
+
 }
+
+const mapStateToProps = state => ({
+    database: state.data
+})
+
+export default connect(mapStateToProps)(createPagination)

@@ -46,7 +46,7 @@ class HeroesLog extends Component {
                 </tbody>
             </Table>
 
-            <Pagination data={this.props.data.heroesLog} callback={this.props.changeHeroesLogPage} />
+            <Pagination data={this.props.data.heroesLog} callback={this.props.changeHeroesLogPage} page='heroesLogPage' />
         </div>
         )
     }
