@@ -15,6 +15,10 @@ class Heroes extends Component {
         super(props);
     }
 
+    componentDidMount(){
+        this.props.showHeroLogs(false)
+    }
+
     render() {
         return (
             <Container fluid={true} >

@@ -36,7 +36,7 @@ export function requestOccurrencesData(){
 }
 
 export function requestHeroesLogData(){
-    return request(`${URL.herolog}/?sort=-id`,'get',this.props.auth.token)
+    return request(`${URL.herolog}/?sort=-date`,'get',this.props.auth.token)
 }
 
 export async function getData(request, action){
@@ -100,3 +100,10 @@ export function translateState(word){
     }
 }
 
+export function filterOccurrences(occurrence,id){
+    return occurrence._id == id
+}
+
+export function filterHeroLogs(heroeslogs,occurrence_id){
+    return heroeslogs.occurrence == occurrence_id
+}

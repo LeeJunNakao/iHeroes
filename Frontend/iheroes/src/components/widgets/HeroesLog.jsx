@@ -5,7 +5,7 @@ import { bindActionCreators } from 'redux'
 
 import Table from 'react-bootstrap/Table'
 import Pagination from '../widgets/Pagination'
-import { getPaginationGroup, getOccurrenceStatus, convertDate } from '../../assets/js/Utils'
+import { getPaginationGroup, getOccurrenceStatus, convertDate,filterOccurrences } from '../../assets/js/Utils'
 import { changeHeroesLogPage } from '../../actions/data'
 
 class HeroesLog extends Component {
@@ -17,16 +17,24 @@ class HeroesLog extends Component {
 
     fillHeroesLogTable(){
         let data = getPaginationGroup(this.props.data.heroesLogPage,this.props.data.heroesLog)
-        let content = data.map(item=>(
-            <tr>
-                <td>{convertDate(item.date)}</td>
-                <td>{item.hero.name}</td>
-                <td>{item.occurrence}</td>
-                <td>{getOccurrenceStatus(item.avaible)}</td>
-            </tr>
-        ))
-
-        return content
+        if(data.length>1){
+            let content = data.map(item=>{
+                let occurrence = this.props.data.occurrences.filter((reg)=>filterOccurrences(reg,item.occurrence))[0]
+                return (
+                <tr>
+                    <td>{convertDate(item.date)}</td>
+                    <td>{item.hero.name}</td>
+                    <td>
+                        <div className="badge badge-primary">ID: {occurrence._id} <span className="badge badge-danger">{occurrence.dangerLevel}</span> </div>
+                        <div>{occurrence.monsterName} </div>
+        
+                    </td>
+                    <td>{getOccurrenceStatus(item.avaible)}</td>
+                </tr>
+            )})
+    
+            return content
+        }
     }
 
     render() {
@@ -35,10 +43,10 @@ class HeroesLog extends Component {
             <Table strip bordered hover>
                 <thead>
                     <tr>
-                        <th>Data</th>
+                        <th>Data de abertura</th>
                         <th>Herói</th>
                         <th>Ocorrência</th>
-                        <th>Situação</th>
+                        <th>Descrição</th>
                     </tr>
                 </thead>
                 <tbody>
