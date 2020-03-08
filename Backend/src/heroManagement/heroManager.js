@@ -1,7 +1,7 @@
 const URL = 'https://zrp-challenge-socket.herokuapp.com:443'
 const io = require('socket.io-client')(URL)
 
-const {setAllHeroesAvaible, connectToAPI, setOccurrenceListener, returnRegisteredOccurrence, chooseHeroes, verifyIfOccurrenceIsRegistered, removeFromQueue, addToQueue, markHeroesOut, registerHeroesLog, changeOccurrenceState, markHeroesAvaible } = require('./Utils') 
+const {setAllHeroesAvaible, connectToAPI, setOccurrenceListener, returnRegisteredOccurrence, chooseHeroes, verifyIfOccurrenceIsRegistered, removeFromQueue, addToQueue, markHeroesOut, registerHeroesLog, changeOccurrenceState, markHeroesAvaible, ifOccurrenceIsNotPending, ifOccurrenceIsNotOnQueue } = require('./Utils') 
 
 class HeroManager{
     constructor(){
@@ -17,25 +17,24 @@ class HeroManager{
         this.resendOccurrencesToHandler();
     }
 
-
-
     async occurrenceHandler(occurrence){
         let occurrenceRegistered = await returnRegisteredOccurrence(occurrence,this.queue)
-        console.log('occorrencias', occurrenceRegistered)
         let heroes = await chooseHeroes(occurrenceRegistered.dangerLevel)
-        console.log('herois selecionados', heroes)
         if(heroes.length<1){
-            addToQueue(this.queue,occurrenceRegistered)
+            if(ifOccurrenceIsNotOnQueue(this.queue,occurrenceRegistered)) addToQueue(this.queue,occurrenceRegistered)
         }else{
-            if(verifyIfOccurrenceIsRegistered(this.queue,occurrenceRegistered) && heroes.length>0) removeFromQueue(this.queue,occurrenceRegistered)
-            registerHeroesLog(occurrenceRegistered,heroes,false)
-            markHeroesOut(heroes)
-            changeOccurrenceState(occurrenceRegistered,'attending')
-            this.startCountdowForHeroBack(occurrenceRegistered,heroes)
+            if(ifOccurrenceIsNotPending(occurrenceRegistered)){
+                removeFromQueue(this.queue,occurrenceRegistered)
+                return
+            }else{
+                if(verifyIfOccurrenceIsRegistered(this.queue,occurrenceRegistered) && heroes.length>0) removeFromQueue(this.queue,occurrenceRegistered)
+                registerHeroesLog(occurrenceRegistered,heroes,false)
+                markHeroesOut(heroes)
+                changeOccurrenceState(occurrenceRegistered,'attending')
+                this.startCountdowForHeroBack(occurrenceRegistered,heroes)
+            }
         }
-        
     }
-
 
     resendOccurrencesToHandler(){
         setInterval(() =>{
@@ -52,7 +51,6 @@ class HeroManager{
             changeOccurrenceState(occurrence,'done')
         }, 120000)
     }
-    
 }
 
 module.exports = HeroManager;

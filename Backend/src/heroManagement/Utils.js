@@ -110,6 +110,10 @@ function verifyIfOccurrenceIsRegistered(queue,occurrence){
     if(queue.includes(occurrence)) return true
 }
 
+function ifOccurrenceIsNotOnQueue(queue,occurrence){
+    if(!queue.includes(occurrence)) return true
+}
+
 function registerOccurence(occurrence){
     return Occurrence.create({
         location: { 
@@ -167,6 +171,10 @@ function markHeroesAvaible(heroes){
     })
 }
 
-let functions = {setAllHeroesAvaible, connectToAPI, setOccurrenceListener, returnRegisteredOccurrence, chooseHeroes, verifyIfOccurrenceIsRegistered, removeFromQueue, addToQueue, markHeroesOut, registerHeroesLog, changeOccurrenceState, markHeroesAvaible }
+function ifOccurrenceIsNotPending(occurrence){
+    if(occurrence.state!='pending') return true
+}
+
+let functions = {setAllHeroesAvaible, connectToAPI, setOccurrenceListener, returnRegisteredOccurrence, chooseHeroes, verifyIfOccurrenceIsRegistered, removeFromQueue, addToQueue, markHeroesOut, registerHeroesLog, changeOccurrenceState, markHeroesAvaible, ifOccurrenceIsNotPending, ifOccurrenceIsNotOnQueue }
 
 module.exports = functions
