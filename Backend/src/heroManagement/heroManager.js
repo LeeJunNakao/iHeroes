@@ -1,9 +1,7 @@
 const URL = 'https://zrp-challenge-socket.herokuapp.com:443'
 const io = require('socket.io-client')(URL)
-const Hero = require('../config/database/model/heroService')
-const Occurrence = require('../config/database/model/ocurrenceService')
-const HeroLog = require('../config/database/model/heroLogService')
-const {setAllHeroesAvaible, connectToAPI, setOccurrenceListener, returnRegisteredOccurrence, chooseHeroes} = require('./Utils') 
+
+const {setAllHeroesAvaible, connectToAPI, setOccurrenceListener, returnRegisteredOccurrence, chooseHeroes, verifyIfOccurrenceIsRegistered, removeFromQueue, addToQueue, markHeroesOut, registerHeroesLog, changeOccurrenceState, markHeroesAvaible } = require('./Utils') 
 
 class HeroManager{
     constructor(){
@@ -13,132 +11,47 @@ class HeroManager{
     }
 
     initRotines(){
-        // setAllHeroesAvaible()
+        setAllHeroesAvaible()
         connectToAPI(io)
         setOccurrenceListener(io,this.occurrenceHandler)
-        // this.resendOccurrencesToHandler();
+        this.resendOccurrencesToHandler();
     }
 
-    // setOccurrenceListener(occurrenceHandler){
-    //     io.on('occurrence', occurrence=>{
-    //         occurrenceHandler(occurrence)
-    //     })
-    // }
+
 
     async occurrenceHandler(occurrence){
         let occurrenceRegistered = await returnRegisteredOccurrence(occurrence,this.queue)
         console.log('occorrencias', occurrenceRegistered)
         let heroes = await chooseHeroes(occurrenceRegistered.dangerLevel)
         console.log('herois selecionados', heroes)
-        // if(hero.length>0){
-        //     hero=hero[0]
-        //     this.removeFromQueue(occurrenceRegistered)
-        //     console.log('Heroi escolhido: ', hero)
-        //     this.registerHeroLog(occurrenceRegistered, hero,false)
-        //     this.markHeroOut(hero)
-        //     this.changeOccurrenceState(occurrenceRegistered,'attending')
-        //     this.startCountdowForHeroBack(occurrenceRegistered,hero)
-        // }else if(!this.queue.includes(occurrence)){
-            
-        //     console.log('Herois indisponíveis no momento: ', hero)
-        //     console.log('Ocorrencia enviado na fila: ', occurrence)
-        //     this.queue.push(occurrenceRegistered)
-        // }
+        if(heroes.length<1){
+            addToQueue(this.queue,occurrenceRegistered)
+        }else{
+            if(verifyIfOccurrenceIsRegistered(this.queue,occurrenceRegistered) && heroes.length>0) removeFromQueue(this.queue,occurrenceRegistered)
+            registerHeroesLog(occurrenceRegistered,heroes,false)
+            markHeroesOut(heroes)
+            changeOccurrenceState(occurrenceRegistered,'attending')
+            this.startCountdowForHeroBack(occurrenceRegistered,heroes)
+        }
+        
     }
 
-    removeFromQueue(occurrence){
-        if(this.queue.includes(occurrence)){
-            let index = this.queue.indexOf(occurrence)
-            this.queue.splice(index,1)
-        }
-    }
 
     resendOccurrencesToHandler(){
-        let index = 0;
         setInterval(() =>{
-            if(this.queue[index]){;
-                this.occurrenceHandler(this.queue[index])
-                index=>this.queue.length-1 ? index=0 : index+=1
+            if(this.queue.length>0){;
+                this.occurrenceHandler(this.queue[0])
             }
         }, 1000);
     }
 
-    // registerOccurence(occurrence){
-    //     return Occurrence.create({
-    //         location: { 
-    //             lat: occurrence.location[0].lat,
-    //             lng: occurrence.location[0].lng
-    //         },
-    //         dangerLevel: occurrence.dangerLevel,
-    //         monsterName: occurrence.monsterName,
-    //         date: new Date(Date.now()),
-    //         state: 'pending'         
-    //     })
-    // }
-
-    markHeroOut(hero){
-        hero.avaible = false;
-        hero.save()
-
-    }
-
-    markHeroAvaible(hero){
-        hero.avaible = true;
-        hero.save()
-
-    }
-
-    registerHeroLog(occurrence,hero,state){
-        HeroLog.create({
-            hero: {
-                id: hero.id,
-                name: hero.name
-            },
-            avaible: state,
-            date: new Date(Date.now()),
-            occurrence: occurrence._id
-        },(err)=> {if(err) console.log('erro no registro de herolog! ', err)})
-    }
-
-    startCountdowForHeroBack(occurrence,hero){
+    startCountdowForHeroBack(occurrence,heroes){
         setTimeout(()=>{
-            this.registerHeroLog(occurrence,hero,true)
-            this.markHeroAvaible(hero);
-            this.changeOccurrenceState(occurrence,'done')
+            registerHeroesLog(occurrence,heroes,true)
+            markHeroesAvaible(heroes);
+            changeOccurrenceState(occurrence,'done')
         }, 120000)
     }
-
-    changeOccurrenceState(occurrence,state){
-        occurrence.state = state;
-        occurrence.save()
-    }
-
-    // async findAvaibleHero(heroClass){
-    //     let heroes=[];
-    //     try{
-    //         await Hero.find({ avaible: true, class: heroClass }, (err,resp)=>{
-    //             heroes = resp
-    //             if(err) {console.err(err)}
-    //          });
-    //     }catch(e){
-    //         console.error(e)
-    //     }
-    //     return heroes;
-    // }
-
-    // async chooseHero(dangerLevel){
-    //     let heroes=[];
-    //     try{
-    //         let heroClass = { God: 'S', Dragon: 'A', Tiger: 'B', Wolf: 'C' }
-    //         let heroes = await this.findAvaibleHero(heroClass[dangerLevel]);
-    //         return heroes;
-    //     }catch(e){
-    //         console.error(e)
-    //     }
-    //     return heroes;
-        
-    // }
-
     
 }
 

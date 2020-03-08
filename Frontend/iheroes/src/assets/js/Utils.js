@@ -1,7 +1,7 @@
 import { toastr } from 'react-redux-toastr'
 import URL from '../../config/URL'
 import request from '../../assets/js/request'
-
+import React from 'react'
 
 export function convertDate(date){
     let splitDate = date.split('T')
@@ -105,5 +105,22 @@ export function filterOccurrences(occurrence,id){
 }
 
 export function filterHeroLogs(heroeslogs,occurrence_id){
-    return heroeslogs.occurrence == occurrence_id
+    return heroeslogs.occurrence == occurrence_id && heroeslogs.avaible == true
+}
+
+export function generateDesignatedHeroList(data,id){
+    let logs = data.filter((herolog)=>filterHeroLogs(herolog,id))
+    console.log('logs', logs)
+    let logsList = logs.map(herolog=>(
+        <div>
+            <div className="occurrences-herolog">{herolog.hero.name}</div>
+            <div className="occurrences-herolog">{convertDate(herolog.date)}</div>
+        </div>
+
+    ))
+    return (
+        <div>
+            {logsList}
+        </div>
+    )
 }

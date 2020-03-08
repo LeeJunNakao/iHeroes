@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
 import Table from 'react-bootstrap/Table'
-import { translateState, getPaginationGroup, convertDate, filterHeroLogs } from '../../assets/js/Utils'
+import { translateState, getPaginationGroup, convertDate, filterHeroLogs, generateDesignatedHeroList } from '../../assets/js/Utils'
 import { changeOccurrencesPage } from '../../actions/data'
 import Pagination from './Pagination'
 
@@ -18,11 +18,9 @@ class OccurrencesTable extends Component {
         occurrences = getPaginationGroup(this.props.data.occurrencesPage, this.props.data.occurrences)
         if(occurrences.length){
             let data = occurrences.map(item =>{
-                let log = this.props.data.heroesLog.filter((herolog)=>filterHeroLogs(herolog,item._id))[0]
+                let log = generateDesignatedHeroList(this.props.data.heroesLog,item._id)
                 if(log==undefined){
                     log=''
-                }else{
-                    log = log.hero.name
                 }
                 return (
                 <tr>

@@ -1,8 +1,9 @@
 const Hero = require('../config/database/model/heroService')
 const Occurrence = require('../config/database/model/ocurrenceService')
+const HeroLog = require('../config/database/model/heroLogService')
 
 
-exports.setAllHeroesAvaible =  ()=>{
+function setAllHeroesAvaible(){
     Hero.find({},(err, hero)=>{
         hero.forEach((each)=>{
             each.avaible = true;
@@ -11,17 +12,16 @@ exports.setAllHeroesAvaible =  ()=>{
     })
 }
 
-exports.connectToAPI = (io)=>{
+function connectToAPI(io){
     io.on('connect', ()=>console.log('connected'));
 }
-
-exports.setOccurrenceListener = (io,occurrenceHandler)=>{
+function setOccurrenceListener(io,occurrenceHandler){
     io.on('occurrence', occurrence=>{
         occurrenceHandler(occurrence)
     })
 }
 
-exports.returnRegisteredOccurrence = async (occurrence,queue)=>{
+async function returnRegisteredOccurrence(occurrence,queue){
     if(verifyIfOccurrenceIsRegistered(queue,occurrence)){
         return occurrence;
     }else{
@@ -29,7 +29,7 @@ exports.returnRegisteredOccurrence = async (occurrence,queue)=>{
     }
 }
 
-exports.chooseHeroes= async (dangerLevel)=>{
+ async function chooseHeroes(dangerLevel){
     let heroes=[];
     const dangerPointsRelation = { God: 8, Dragon: 4, Tiger: 2, Wolf: 1 }
     let dangerPoints = dangerPointsRelation[dangerLevel]
@@ -122,3 +122,51 @@ function registerOccurence(occurrence){
         state: 'pending'         
     })
 }
+
+
+function removeFromQueue(queue, occurrence){
+    if(queue.includes(occurrence)){
+        let index = queue.indexOf(occurrence)
+        queue.splice(index,1)
+    }
+}
+function addToQueue(queue, occurrence){
+    queue.push(occurrence)
+}
+
+function markHeroesOut(heroes){
+    heroes.forEach(hero=>{
+        hero.avaible = false;
+        hero.save()
+    })
+}
+
+function registerHeroesLog(occurrence,heroes,state){
+    heroes.forEach(hero=>{
+        HeroLog.create({
+            hero: {
+                id: hero.id,
+                name: hero.name
+            },
+            avaible: state,
+            date: new Date(Date.now()),
+            occurrence: occurrence._id
+        },(err)=> {if(err) console.log('erro no registro de herolog! ', err)})
+    })
+}
+
+function changeOccurrenceState(occurrence,state){
+    occurrence.state = state;
+    occurrence.save()
+}
+
+function markHeroesAvaible(heroes){
+    heroes.forEach(hero=>{
+        hero.avaible = true;
+        hero.save()
+    })
+}
+
+let functions = {setAllHeroesAvaible, connectToAPI, setOccurrenceListener, returnRegisteredOccurrence, chooseHeroes, verifyIfOccurrenceIsRegistered, removeFromQueue, addToQueue, markHeroesOut, registerHeroesLog, changeOccurrenceState, markHeroesAvaible }
+
+module.exports = functions
