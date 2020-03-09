@@ -35,7 +35,6 @@ class Login extends Component{
                 await this.props.getToken(response.token)
                 localStorage.setItem('iheroes',JSON.stringify(response))
             }
-
         }catch(err){
             if(err.response) err.response.data.errors.forEach(e=> toastr.error('Erro',e))
             console.error(err)

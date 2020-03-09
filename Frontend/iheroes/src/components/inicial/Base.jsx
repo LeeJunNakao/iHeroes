@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
+import URL from '../../config/URL'
 import { showOccurrences, showHeroes } from '../../actions/screen'
 import { logout } from '../../actions/auth'
 import Container from 'react-bootstrap/Container'
 import Heroes from '../screens/Heroes'
 import Occurrences from '../screens/Occurrences'
 import Navigator from '../widgets/Navigator'
+
 
 class Base extends Component {
     constructor(props) {
@@ -18,6 +20,7 @@ class Base extends Component {
         this.selectScreen()
         
     }
+
 
     selectScreen(){
         const components={ heroes: <Heroes/>, occurrences: <Occurrences/>}

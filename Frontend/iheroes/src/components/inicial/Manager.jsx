@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { toastr } from 'react-redux-toastr'
 
-
 import { getData, requestHeroesData, requestOccurrencesData, requestHeroesLogData } from '../../assets/js/Utils'
 import URL from '../../config/URL'
 import request from '../../assets/js/request'
@@ -18,14 +17,21 @@ class Manager extends Component{
         this.requestHeroesData = requestHeroesData.bind(this)
         this.requestOccurrencesData = requestOccurrencesData.bind(this)
         this.requestHeroesLogData = requestHeroesLogData.bind(this)
+        this.keepGetingData = this.keepGetingData.bind(this)
     }
-
     componentDidMount(){
       this.loadStates()
+      this.keepGetingData()
     }
 
     verifyAuthentication(){
         return this.props.auth.authenticated ? <Base/> : <Login/>
+    }
+
+    keepGetingData(){
+        setInterval(()=>{
+            this.loadStates()
+        },30000)
     }
 
     async loadStates(){

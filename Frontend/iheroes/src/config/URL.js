@@ -1,4 +1,5 @@
 const URL = {
+    backend: 'http://localhost:4000',
     login: 'http://localhost:4000/login',
     register: 'http://localhost:4000/register',
     validateToken: 'http://localhost:4000/validateToken',
