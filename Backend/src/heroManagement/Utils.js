@@ -159,9 +159,14 @@ function registerHeroesLog(occurrence,heroes,state){
     })
 }
 
-function changeOccurrenceState(occurrence,state){
-    occurrence.state = state;
-    occurrence.save()
+async function changeOccurrenceState(occurrence,state){
+    try {
+        occurrence.state = state;
+        await occurrence.save()
+    }catch(e){
+        console.log('erro ao mudar de estado',e)
+    }
+    
 }
 
 function markHeroesAvaible(heroes){

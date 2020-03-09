@@ -22,11 +22,11 @@ class HeroManager {
         if (ifOccurrenceIsNotPending(occurrenceRegistered)) {
             return
         } else {
-            changeOccurrenceState(occurrenceRegistered, 'attending')
+            await changeOccurrenceState(occurrenceRegistered, 'attending')
             let heroes = await chooseHeroes(occurrenceRegistered.dangerLevel)
             if (heroes.length < 1) {
                 if (ifOccurrenceIsNotOnQueue(this.queue, occurrenceRegistered)) addToQueue(this.queue, occurrenceRegistered)
-                changeOccurrenceState(occurrenceRegistered, 'pending')
+                await changeOccurrenceState(occurrenceRegistered, 'pending') 
             } else {
                 if (verifyIfOccurrenceIsRegistered(this.queue, occurrenceRegistered) && heroes.length > 0) removeFromQueue(this.queue, occurrenceRegistered)
                 registerHeroesLog(occurrenceRegistered, heroes, false)
@@ -42,7 +42,7 @@ class HeroManager {
             if (this.queue.length > 0) {
                 this.occurrenceHandler(this.queue[0])
             }
-        }, 120000);
+        }, 30000);
     }
 
     startCountdowForHeroBack(occurrence, heroes) {
